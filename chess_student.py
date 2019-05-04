@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 import matplotlib.pyplot as plt
 from degree_freedom_queen import *
 from degree_freedom_king1 import *
@@ -115,10 +116,10 @@ def main():
     bias_W2 = np.zeros(n_output_layer)[:, np.newaxis]
 
     # Initialise RMSProp gradient accumulations
-    cache_W1 = np.zeros_like(W1)
-    cache_W2 = np.zeros_like(W2)
-    cache_bias_W1 = np.zeros_like(bias_W1)
-    cache_bias_W2 = np.zeros_like(bias_W2)
+    avg_W1 = np.zeros_like(W1)
+    avg_W2 = np.zeros_like(W2)
+    avg_bias_W1 = np.zeros_like(bias_W1)
+    avg_bias_W2 = np.zeros_like(bias_W2)
 
     # YOUR CODES ENDS HERE
 
@@ -127,15 +128,14 @@ def main():
     beta = 0.00005    #epsilon discount factor
     gamma = 0.85      #SARSA Learning discount factor
     eta = 0.0035      #learning rate
-    # N_episodes = 100000 #Number of games, each game ends when we have a checkmate or a draw
-    N_episodes = 50000
+    N_episodes = 100000 #Number of games, each game ends when we have a checkmate or a draw
     alpha = 1 / 10000
     sarsa = True
-    rmsprop = True
+    rmsprop = False
 
     if rmsprop:
         rmsprop_gamma = 0.9
-        rmsprop_eps = 1e-5
+        rmsprop_eps = 1e-8
 
     ###  Training Loop  ###
 
@@ -164,7 +164,7 @@ def main():
     for n in range(N_episodes):
         if n % 1000 == 0:
             print(n)
-        print(W1)
+        # print(W2)
 
         epsilon_f = epsilon_0 / (1 + beta * n) #psilon is discounting per iteration to have less probability to explore
         checkmate = 0  # 0 = not a checkmate, 1 = checkmate
@@ -263,19 +263,24 @@ def main():
                 """
 
                 if rmsprop:
+                    # W2
                     W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
-                    cache_W2 = rmsprop_gamma * cache_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
-                    W2 += eta * cache_W2 / np.sqrt(cache_W2 + rmsprop_eps)
+                    avg_W2 = rmsprop_gamma * avg_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
+                    W2 += eta * avg_W2 / np.sqrt(avg_W2 + rmsprop_eps)
 
-                    cache_bias_W2 = rmsprop_gamma * cache_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
-                    bias_W2 += eta * cache_bias_W2 / np.sqrt(cache_bias_W2 + rmsprop_eps)
+                    # Bias W2
+                    avg_bias_W2 = rmsprop_gamma * avg_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
+                    bias_W2 += eta * avg_bias_W2 / np.sqrt(avg_bias_W2 + rmsprop_eps)
 
+                    # W1
                     W1_delta = np.heaviside(out1, 0) * np.dot(W2.T, W2_delta)
-                    cache_W1 = rmsprop_gamma * cache_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
-                    W1 += eta * cache_W1 / np.sqrt(cache_W1 + rmsprop_eps)
+                    avg_W1 = rmsprop_gamma * avg_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
+                    W1 += eta * avg_W1 / np.sqrt(avg_W1 + rmsprop_eps)
 
-                    cache_bias_W1 = rmsprop_gamma * cache_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
-                    bias_W1 += eta * cache_bias_W1 / np.sqrt(cache_bias_W1 + rmsprop_eps)
+                    # Bias W1
+                    avg_bias_W1 = rmsprop_gamma * avg_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
+                    bias_W1 += eta * avg_bias_W1 / np.sqrt(avg_bias_W1 + rmsprop_eps)
+
                 else:
                     W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
                     W2 += eta * np.outer(W2_delta, out1)
@@ -304,19 +309,24 @@ def main():
                 """
 
                 if rmsprop:
+                    # W2
                     W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
-                    cache_W2 = rmsprop_gamma * cache_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
-                    W2 += eta * cache_W2 / np.sqrt(cache_W2 + rmsprop_eps)
+                    avg_W2 = rmsprop_gamma * avg_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
+                    W2 += eta * avg_W2 / np.sqrt(avg_W2 + rmsprop_eps)
 
-                    cache_bias_W2 = rmsprop_gamma * cache_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
-                    bias_W2 += eta * cache_bias_W2 / np.sqrt(cache_bias_W2 + rmsprop_eps)
+                    # Bias W2
+                    avg_bias_W2 = rmsprop_gamma * avg_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
+                    bias_W2 += eta * avg_bias_W2 / np.sqrt(avg_bias_W2 + rmsprop_eps)
 
+                    # W1
                     W1_delta = np.heaviside(out1, 0) * np.dot(W2.T, W2_delta)
-                    cache_W1 = rmsprop_gamma * cache_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
-                    W1 += eta * cache_W1 / np.sqrt(cache_W1 + rmsprop_eps)
+                    avg_W1 = rmsprop_gamma * avg_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
+                    W1 += eta * avg_W1 / np.sqrt(avg_W1 + rmsprop_eps)
 
-                    cache_bias_W1 = rmsprop_gamma * cache_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
-                    bias_W1 += eta * cache_bias_W1 / np.sqrt(cache_bias_W1 + rmsprop_eps)
+                    # Bias W1
+                    avg_bias_W1 = rmsprop_gamma * avg_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
+                    bias_W1 += eta * avg_bias_W1 / np.sqrt(avg_bias_W1 + rmsprop_eps)
+
                 else:
                     W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
                     W2 += eta * np.outer(W2_delta, out1)
@@ -373,23 +383,27 @@ def main():
             else:
                 # Maximum Q value in the next state
                 max_Q = max(Q_next[allowed_a])
-                # W2_delta = (R + gamma * np.max(Q_next) - Q[a_agent]) * np.heaviside(Q, 0)
                 W2_delta = (R + gamma * max_Q - Q[a_agent]) * np.heaviside(Q, 0)
 
             if rmsprop:
+                # W2
                 W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
-                cache_W2 = rmsprop_gamma * cache_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
-                W2 += eta * cache_W2 / np.sqrt(cache_W2 + rmsprop_eps)
+                avg_W2 = rmsprop_gamma * avg_W2 + (1 - rmsprop_gamma) * np.power(np.outer(W2_delta, out1), 2)
+                W2 += eta * avg_W2 / np.sqrt(avg_W2 + rmsprop_eps)
 
-                cache_bias_W2 = rmsprop_gamma * cache_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
-                bias_W2 += eta * cache_bias_W2 / np.sqrt(cache_bias_W2 + rmsprop_eps)
+                # Bias W2
+                avg_bias_W2 = rmsprop_gamma * avg_bias_W2 + (1 - rmsprop_gamma) * np.power(W2_delta, 2)
+                bias_W2 += eta * avg_bias_W2 / np.sqrt(avg_bias_W2 + rmsprop_eps)
 
+                # W1
                 W1_delta = np.heaviside(out1, 0) * np.dot(W2.T, W2_delta)
-                cache_W1 = rmsprop_gamma * cache_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
-                W1 += eta * cache_W1 / np.sqrt(cache_W1 + rmsprop_eps)
+                avg_W1 = rmsprop_gamma * avg_W1 + (1 - rmsprop_gamma) * np.power(np.outer(W1_delta, x), 2)
+                W1 += eta * avg_W1 / np.sqrt(avg_W1 + rmsprop_eps)
 
-                cache_bias_W1 = rmsprop_gamma * cache_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
-                bias_W1 += eta * cache_bias_W1 / np.sqrt(cache_bias_W1 + rmsprop_eps)
+                # Bias W1
+                avg_bias_W1 = rmsprop_gamma * avg_bias_W1 + (1 - rmsprop_gamma) * np.power(W1_delta, 2)
+                bias_W1 += eta * avg_bias_W1 / np.sqrt(avg_bias_W1 + rmsprop_eps)
+
             else:
                 W2_delta = (R - Q[a_agent]) * np.heaviside(Q, 0)
                 W2 += eta * np.outer(W2_delta, out1)
@@ -402,6 +416,7 @@ def main():
 
             # YOUR CODE ENDS HERE
             i += 1
+
         if n == 0:
             N_moves_save[n, 0] = i
             R_save[n, 0] = 0
@@ -409,8 +424,8 @@ def main():
             N_moves_save[n, 0] = alpha * i + (1 - alpha) * N_moves_save[n - 1, 0]
             R_save[n, 0] = alpha * R + (1 - alpha) * R_save[n - 1, 0]
 
-    plt.plot(np.arange(R_save.size), R_save)
-    plt.show()
+    with open('sarsa_100k.pickle', 'wb') as file:
+        pickle.dump(R_save, file)
 
 
 if __name__ == '__main__':
