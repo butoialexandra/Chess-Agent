@@ -10,6 +10,6 @@ def show_sarsa(rewards):
 
 
 if __name__ == '__main__':
-    with open('sarsa_first_try.pickle', 'rb') as file:
+    with open('sarsa_10k.pickle', 'rb') as file:
         rewards = pickle.load(file)
-        show_sarsa(rewards)
+    show_sarsa(rewards)
