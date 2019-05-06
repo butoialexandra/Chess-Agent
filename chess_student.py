@@ -119,10 +119,10 @@ def main():
 
     # Network Parameters
     epsilon_0 = 0.2   #epsilon for the e-greedy policy
-    beta = 0.00005    #epsilon discount factor
+    beta = 0.000005    #epsilon discount factor
     gamma = 0.85      #SARSA Learning discount factor
     eta = 0.0035      #learning rate
-    N_episodes = 100000 #Number of games, each game ends when we have a checkmate or a draw
+    N_episodes = 500000 #Number of games, each game ends when we have a checkmate or a draw
     alpha = 1 / 10000
     sarsa = False
     rmsprop = False
@@ -430,8 +430,10 @@ def main():
             N_moves_save[n, 0] = alpha * i + (1 - alpha) * N_moves_save[n - 1, 0]
             R_save[n, 0] = alpha * R + (1 - alpha) * R_save[n - 1, 0]
 
-    with open('q_100k_4.pickle', 'wb') as file:
+    with open('q_500k_beta10-6.pickle', 'wb') as file:
         pickle.dump(R_save, file)
+    with open('q_500k_beta10-6_moves.pickle', 'wb') as file:
+        pickle.dump(N_moves_save, file)
 
 
 if __name__ == '__main__':
