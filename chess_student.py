@@ -119,7 +119,7 @@ def main():
     beta = 0.00005    #epsilon discount factor
     gamma = 0.85      #SARSA Learning discount factor
     eta = 0.0035      #learning rate
-    N_episodes = 100000 #Number of games, each game ends when we have a checkmate or a draw
+    N_episodes = 1000 #Number of games, each game ends when we have a checkmate or a draw
     alpha = 1 / 10000
     sarsa = False
     rmsprop = False
@@ -429,11 +429,10 @@ def main():
             N_moves_save[n, 0] = alpha * i + (1 - alpha) * N_moves_save[n - 1, 0]
             R_save[n, 0] = alpha * R + (1 - alpha) * R_save[n - 1, 0]
 
-    # with open('s.pickle', 'wb') as file:
-    #     pickle.dump(R_save, file)
-    with open('q_moves.pickle', 'wb') as file:
+    with open('rewards.pickle', 'wb') as file:
+        pickle.dump(R_save, file)
+    with open('moves.pickle', 'wb') as file:
         pickle.dump(N_moves_save, file)
-
 
 if __name__ == '__main__':
     main()
