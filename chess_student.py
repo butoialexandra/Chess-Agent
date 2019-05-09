@@ -19,9 +19,6 @@ def epsilon_greedy(epsilon, Q, allowed_a):
         a_agent = np.random.choice(allowed_a)
     else:
         # select action with maximum Q value
-        # allowed_Q_values = Q[allowed_a] # take Q values only for allowed actions
-        # best_Q_value = max(allowed_Q_values) # maximum Q value from allowed actions
-        # a_agent = np.where(Q == best_Q_value)[0][0] # index of maximum Q value
         a_agent = allowed_a[0]
         for action in allowed_a:
             if Q[action] > Q[a_agent]:
@@ -119,10 +116,10 @@ def main():
 
     # Network Parameters
     epsilon_0 = 0.2   #epsilon for the e-greedy policy
-    beta = 0.000005    #epsilon discount factor
+    beta = 0.00005    #epsilon discount factor
     gamma = 0.85      #SARSA Learning discount factor
     eta = 0.0035      #learning rate
-    N_episodes = 500000 #Number of games, each game ends when we have a checkmate or a draw
+    N_episodes = 100000 #Number of games, each game ends when we have a checkmate or a draw
     alpha = 1 / 10000
     sarsa = False
     rmsprop = False
@@ -164,9 +161,9 @@ def main():
     
 
     for n in range(N_episodes):
-        if n % 1000 == 0:
-            print(n)
-            # print(W2)
+        # if n % 1000 == 0:
+        #     print(n)
+        #     # print(W2)
 
         epsilon_f = epsilon_0 / (1 + beta * n) #psilon is discounting per iteration to have less probability to explore
         checkmate = 0  # 0 = not a checkmate, 1 = checkmate
@@ -385,8 +382,10 @@ def main():
             iteration of the episode, the match continues.
             """
             if sarsa:
+                # if SARSA, choose next action based on policy
                 next_Q_value = Q_next[epsilon_greedy(epsilon_f, Q_next, allowed_a)]
             else:
+                # if Q-learning choose action with maximum Q value
                 next_Q_value = max(Q_next[allowed_a])
 
             if rmsprop:
@@ -424,15 +423,15 @@ def main():
             i += 1
 
         if n == 0:
-            N_moves_save[n, 0] = i
+            N_moves_save[n, 0] = 80
             R_save[n, 0] = 0
         else:
             N_moves_save[n, 0] = alpha * i + (1 - alpha) * N_moves_save[n - 1, 0]
             R_save[n, 0] = alpha * R + (1 - alpha) * R_save[n - 1, 0]
 
-    with open('q_500k_beta10-6.pickle', 'wb') as file:
-        pickle.dump(R_save, file)
-    with open('q_500k_beta10-6_moves.pickle', 'wb') as file:
+    # with open('s.pickle', 'wb') as file:
+    #     pickle.dump(R_save, file)
+    with open('q_moves.pickle', 'wb') as file:
         pickle.dump(N_moves_save, file)
 
 
