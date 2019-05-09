@@ -14,4 +14,4 @@ The following code must be modified so that the name of the files is different i
         pickle.dump(N_moves_save, file)
 ```
 
-The Jupyter notebook "Plots.ipynb" contains functionality for displaying the reward per episode and the number of moves for the different experiments that were conducted. The cells from the notebook must be run in the order they appear. 
+The Jupyter notebook "Plots.ipynb" contains functionality for displaying the reward per episode and the number of moves per episode for the different experiments that were conducted. The cells from the notebook must be run in the order they appear. 
